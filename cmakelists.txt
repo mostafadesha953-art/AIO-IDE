@@ -26,3 +26,4 @@ target_link_libraries(AIO_IDE PRIVATE
     d3d11 
     dwmapi
 )
+
