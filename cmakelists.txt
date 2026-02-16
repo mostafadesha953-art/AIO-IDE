@@ -2,28 +2,30 @@ cmake_minimum_required(VERSION 3.10)
 project(AIO_Smart_IDE LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# دمج المكتبات داخلياً ليعمل البرنامج بشكل مستقل (Static Linking)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-# البحث عن مكتبات vcpkg
 find_package(CURL REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-# تجميع كل ملفات المصدر الموجودة في المجلد الرئيسي
-file(GLOB SOURCES ".cpp" ".h")
+# تأكد أن هذه الأسماء تطابق ما عدلته في GitHub الآن
+set(EXE_SOURCES
+    main.cpp
+    ui_manager.cpp
+    imgui.cpp
+    imgui_draw.cpp
+    imgui_widgets.cpp
+    imgui_tables.cpp
+    imgui_impl_dx11.cpp
+    imgui_impl_win32.cpp
+)
 
-add_executable(AIO_IDE ${SOURCES})
+add_executable(AIO_IDE ${EXE_SOURCES})
 
-# تحديد مسار ملفات الرأس
 target_include_directories(AIO_IDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
-# ربط المكتبات الرسومية والإنترنت
 target_link_libraries(AIO_IDE PRIVATE 
     CURL::libcurl 
     nlohmann_json::nlohmann_json
     d3d11 
     dwmapi
 )
-
