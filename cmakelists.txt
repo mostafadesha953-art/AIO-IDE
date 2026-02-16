@@ -1,55 +1,31 @@
 cmake_minimum_required(VERSION 3.10)
-
-# 1. تعريف المشروع وتأكيد لغة C++ لمنع خطأ الـ Linker
 project(AIO_Smart_IDE LANGUAGES CXX)
 
-# 2. إعدادات التوافق والأداء (Static Linking)
-# هذا السطر يضمن دمج مكتبات C++ داخل الـ EXE ليعمل على ويندوز 2000/XP بدون DLLs
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-# استخدام معيار C++17 للقوة والسرعة
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# 1. البحث التلقائي عن كل ملفات البرمجة في كل المجلدات
+file(GLOB_RECURSE SOURCES 
+    "*.cpp" 
+    "*.h" 
+    "*.hpp"
+)
 
-# دعم اللغة العربية في الأكواد (منع تحذيرات الـ Encoding)
-add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-
-# 3. الربط مع أداة vcpkg لجلب المكتبات الخارجية (CURL & JSON)
-if(DEFINED ENV{VCPKG_INSTALLATION_ROOT})
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+# 2. التأكد من وجود ملفات قبل المتابعة
+if(NOT SOURCES)
+    message(FATAL_ERROR "Critical Error: No source files (.cpp) found in the entire repository!")
 endif()
 
-# 4. البحث عن المكتبات الضرورية (الذكاء الاصطناعي والويب)
+# 3. إعداد vcpkg
+if(DEFINED ENV{VCPKG_INSTALLATION_ROOT})
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake")
+endif()
+
 find_package(CURL REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-# 5. تحديد ملفات المصدر يدوياً (بالحروف الصغيرة لضمان النجاح في GitHub)
-set(EXE_SOURCES
-    main.cpp
-    ui_manager.cpp
-    imgui.cpp
-    imgui_draw.cpp
-    imgui_widgets.cpp
-    imgui_tables.cpp
-    imgui_demo.cpp
-    imgui_impl_dx11.cpp
-    imgui_impl_win32.cpp
-)
+# 4. بناء البرنامج باستخدام الملفات التي وجدناها
+add_executable(AIO_IDE ${SOURCES})
 
-# 6. إنشاء ملف البرنامج التنفيذي
-add_executable(AIO_IDE ${EXE_SOURCES})
-
-# 7. تعريف مسارات "ملفات الرأس" (Headers) لضمان رؤية imgui.h
 target_include_directories(AIO_IDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-
-# 8. ربط المكتبات النهائية (الإنترنت، الرسوميات، والنظام)
-target_link_libraries(AIO_IDE PRIVATE 
-    CURL::libcurl 
-    nlohmann_json::nlohmann_json
-    d3d11       # محرك الرسوميات DirectX 11
-    dwmapi      # واجهة الويندوز
-    imm32       # لغات الإدخال
-)
-
-# 9. إعدادات إضافية لجعل البرنامج يعمل كنافذة (وليس شاشة سوداء CMD)
-set_target_properties(AIO_IDE PROPERTIES WIN32_EXECUTABLE TRUE)
+target_link_libraries(AIO_IDE PRIVATE CURL::libcurl nlohmann_json::nlohmann_json d3d11 dwmapi)
