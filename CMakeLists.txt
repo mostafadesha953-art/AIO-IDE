@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+﻿cmake_minimum_required(VERSION 3.10)
 project(AIO_Smart_IDE LANGUAGES CXX)
 
 # تفعيل الربط الساكن (Static Linking) لدمج المكتبات داخل الـ EXE
