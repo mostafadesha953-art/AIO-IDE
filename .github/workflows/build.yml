@@ -1,4 +1,4 @@
-name: Production_Build
+name: Global_Search_Build
 on: [push]
 jobs:
   build:
@@ -6,22 +6,26 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Find Core Files
+      # هذا الأمر يبحث عن main.cpp ويخبرنا بمكانه بالضبط
+      run: |
+        echo "Searching for files..."
+        dir /s /b main.cpp
+
     - name: Install vcpkg dependencies
-      run: |
-        vcpkg install curl:x64-windows nlohmann-json:x64-windows
+      run: vcpkg install curl:x64-windows nlohmann-json:x64-windows
 
-    - name: Configure CMake
-      # السطر التالي يربط vcpkg بـ CMake ليعرف مكان CURL و JSON
+    - name: Configure and Build
       run: |
-        cmake -S . -B build `
-        -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" `
-        -A x64
+        # البحث عن المجلد الذي يحتوي على CMakeLists.txt والعمل منه
+        $cmakeFile = Get-ChildItem -Filter CMakeLists.txt -Recurse | Select-Object -First 1
+        $projectDir = $cmakeFile.DirectoryName
+        cd $projectDir
+        cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+        cmake --build build --config Release
 
-    - name: Build Project
-      run: cmake --build build --config Release
-      
-    - name: Upload EXE
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: AIO_IDE_Binary
-        path: build/Release/AIO_IDE.exe
+        name: AIO_IDE_Final
+        path: "**/build/Release/AIO_IDE.exe"
