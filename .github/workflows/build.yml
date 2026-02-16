@@ -6,21 +6,25 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Find Core Files
-      # هذا الأمر يبحث عن main.cpp ويخبرنا بمكانه بالضبط
+    - name: Find and Fix File Locations
+      shell: pwsh
       run: |
-        echo "Searching for files..."
-        dir /s /b main.cpp
-
-    - name: Install vcpkg dependencies
-      run: vcpkg install curl:x64-windows nlohmann-json:x64-windows
+        # البحث عن مكان ملف main.cpp الحقيقي
+        $mainFile = Get-ChildItem -Filter "main.cpp" -Recurse | Select-Object -First 1
+        if ($null -eq $mainFile) { throw "Could not find main.cpp in the repository!" }
+        
+        $rootPath = $mainFile.DirectoryName
+        echo "Files found in: $rootPath"
+        
+        # الانتقال لمجلد الملفات وتثبيت المكتبات
+        cd $rootPath
+        vcpkg install curl:x64-windows nlohmann-json:x64-windows
 
     - name: Configure and Build
+      shell: pwsh
       run: |
-        # البحث عن المجلد الذي يحتوي على CMakeLists.txt والعمل منه
-        $cmakeFile = Get-ChildItem -Filter CMakeLists.txt -Recurse | Select-Object -First 1
-        $projectDir = $cmakeFile.DirectoryName
-        cd $projectDir
+        $cmakeFile = Get-ChildItem -Filter "CMakeLists.txt" -Recurse | Select-Object -First 1
+        cd $cmakeFile.DirectoryName
         cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
         cmake --build build --config Release
 
