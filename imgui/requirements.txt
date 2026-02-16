@@ -1,3 +1,0 @@
-﻿flask
-openai
-flask-cors
