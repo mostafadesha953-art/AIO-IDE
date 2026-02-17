@@ -1,20 +1,29 @@
 cmake_minimum_required(VERSION 3.10)
-project(AIO_Smart_IDE LANGUAGES CXX) # تأكيد اللغة C++
+project(AIO_Smart_IDE LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-# جلب المكتبات
+# 1. البحث عن المكتبات
 find_package(CURL REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-# البحث عن الملفات وإجبار النظام على اعتبارها C++
+# 2. تجميع الملفات
 file(GLOB_RECURSE SOURCES ".cpp" ".h")
 
-# --- السطر السحري لحل المشكلة ---
-set_target_properties(AIO_IDE PROPERTIES LINKER_LANGUAGE CXX)
-
+# 3. إنشاء البرنامج (يجب أن يكون هذا السطر قبل أي خصائص)
 add_executable(AIO_IDE ${SOURCES})
 
+# 4. تعيين الخصائص للبرنامج بعد إنشائه
+set_target_properties(AIO_IDE PROPERTIES 
+    LINKER_LANGUAGE CXX
+    WIN32_EXECUTABLE TRUE
+)
+
+# 5. الربط النهائي
 target_include_directories(AIO_IDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(AIO_IDE PRIVATE CURL::libcurl nlohmann_json::nlohmann_json d3d11 dwmapi imm32 winmm)
+target_link_libraries(AIO_IDE PRIVATE 
+    CURL::libcurl 
+    nlohmann_json::nlohmann_json 
+    d3d11 dwmapi imm32 winmm
+)
