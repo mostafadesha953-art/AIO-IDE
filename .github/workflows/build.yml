@@ -38,10 +38,8 @@ jobs:
       run: cmake --build build --config Release
 
     # --- 5. رفع البرنامج الجاهز للتحميل (Artifact) ---
-   - name: Upload Final Binary
+    - name: Upload Final EXE
       uses: actions/upload-artifact@v4
       with:
-        name: AIO_Smart_IDE_Package
-        # سيقوم بالبحث في كل المجلدات (بما فيها مجلد AI_Programmer)
-        path: "*/Release/.exe" 
-        if-no-files-found: error
+        name: AIO_Smart_IDE_Windows
+        path: build/Release/AIO_IDE.exe
