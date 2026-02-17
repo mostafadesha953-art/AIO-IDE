@@ -1,40 +1,35 @@
 cmake_minimum_required(VERSION 3.10)
 project(AIO_Smart_IDE LANGUAGES CXX)
 
-# 1. البحث عن كافة الصيغ الممكنة (cpp, cxx, cc) وحالات الأحرف (Caps/Small)
-file(GLOB_RECURSE ALL_FILES 
-    ".cpp" ".CPP" 
-    ".cxx" ".CXX"
-    ".cc"  ".CC"
-    ".h"   ".H"
-    ".hpp" ".HPP"
-)
-
-# 2. تصفية الملفات للتأكد من وجود كود فعلي
-set(SOURCES "")
-foreach(FILE_PATH ${ALL_FILES})
-    set(SOURCES ${SOURCES} ${FILE_PATH})
-endforeach()
-
-if(NOT SOURCES)
-    message(FATAL_ERROR "لم يتم العثور على أي ملفات برمجية! تأكد من رفع الملفات.")
-endif()
-
-# 3. إعدادات النظام والربط الساكن
+# 1. إعدادات التوافق للعمل على ويندوز 2000 (Static Linking)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(CMAKE_CXX_STANDARD 17)
 
-# 4. جلب المكتبات الخارجية
+# 2. البحث عن الملفات في المجلد الرئيسي فقط (تجنب المجلدات المفقودة)
+file(GLOB SOURCES 
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp"
+)
+
+# رسالة فحص للتأكد من رؤية الملفات في سجلات GitHub
+message(STATUS "Files found in root: ${SOURCES}")
+
+if(NOT SOURCES)
+    message(FATAL_ERROR "Error: No .cpp files found in the root of mostafadesha953-art!")
+endif()
+
+# 3. جلب مكتبات الذكاء الاصطناعي والإنترنت
 find_package(CURL REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-# 5. دمج كل ما وجده النظام في ملف EXE واحد
+# 4. بناء البرنامج التنفيذي
 add_executable(AIO_IDE ${SOURCES})
 
-# 6. الربط والمحركات
+# 5. إعداد المسارات والربط الرسومي
 target_include_directories(AIO_IDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(AIO_IDE PRIVATE 
     CURL::libcurl 
     nlohmann_json::nlohmann_json 
-    d3d11 dwmapi
+    d3d11 dwmapi imm32
 )
