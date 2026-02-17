@@ -1,8 +1,8 @@
 ﻿#include "imgui.h"
-#include "AI_Engine.h"    // استدعاء ملف الذكاء الاصطناعي
-#include "Compiler.h"     // استدعاء ملف المترجم المدمج
+#include "ai_engine.h"    // استدعاء ملف الذكاء الاصطناعي
+#include "compiler.h"     // استدعاء ملف المترجم المدمج
 #include "imgui.h"
-#include "AIChat.h"
+#include "aichat.h"
 
 void DrawApp() {
     static char codeArea[1024 * 16] = ""; // مخزن الكود
@@ -68,3 +68,4 @@ void RenderChatWindow() {
 
     ImGui::End();
 }
+
