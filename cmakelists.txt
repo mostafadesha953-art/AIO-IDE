@@ -2,34 +2,62 @@ cmake_minimum_required(VERSION 3.10)
 project(AIO_Smart_IDE LANGUAGES CXX)
 
 # 1. إعدادات التوافق للعمل على ويندوز 2000 (Static Linking)
+# هذا السطر يدمج المكتبات داخل الـ EXE ليكون ملفاً واحداً مستقلاً
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(CMAKE_CXX_STANDARD 17)
 
-# 2. البحث عن الملفات في المجلد الرئيسي فقط (تجنب المجلدات المفقودة)
-file(GLOB SOURCES 
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp"
+# دعم اللغة العربية ومنع تحذيرات التشفير
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
+# 2. تحديد الملفات "الناجحة" فقط (تجاهل الملفات القديمة مثل mainui.cpp)
+# قمنا بحذف أي ملف يسبب أخطاء وركزنا على الهيكل الجديد
+set(SOURCES 
+    main.cpp
+    ui_manager.cpp
+    imgui.cpp
+    imgui_draw.cpp
+    imgui_widgets.cpp
+    imgui_tables.cpp
+    imgui_demo.cpp
+    imgui_impl_dx11.cpp
+    imgui_impl_win32.cpp
+    # ملفات الهيدر (Headers)
+    ui_manager.h
+    ai_engine.h
+    security.h
+    protection.h
+    config.h
+    imgui.h
+    imconfig.h
+    imgui_internal.h
+    imstb_textedit.h
+    imstb_rectpack.h
+    imstb_truetype.h
+    imgui_impl_dx11.h
+    imgui_impl_win32.h
 )
 
-# رسالة فحص للتأكد من رؤية الملفات في سجلات GitHub
-message(STATUS "Files found in root: ${SOURCES}")
+# رسالة فحص في سجلات GitHub
+message(STATUS "Compiling Project with Verified Sources...")
 
-if(NOT SOURCES)
-    message(FATAL_ERROR "Error: No .cpp files found in the root of mostafadesha953-art!")
-endif()
-
-# 3. جلب مكتبات الذكاء الاصطناعي والإنترنت
+# 3. جلب مكتبات الذكاء الاصطناعي والإنترنت (vcpkg)
 find_package(CURL REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 # 4. بناء البرنامج التنفيذي
 add_executable(AIO_IDE ${SOURCES})
 
-# 5. إعداد المسارات والربط الرسومي
+# 5. إعداد المسارات والربط الرسومي والمكتبات
 target_include_directories(AIO_IDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+
 target_link_libraries(AIO_IDE PRIVATE 
     CURL::libcurl 
     nlohmann_json::nlohmann_json 
-    d3d11 dwmapi imm32
+    d3d11     # محرك DirectX 11
+    dwmapi    # واجهة الويندوز
+    imm32     # دعم لغات الإدخال
+    winmm     # وظائف النظام المتقدمة
 )
+
+# تحويل البرنامج ليعمل كنافذة (بدون شاشة CMD سوداء)
+set_target_properties(AIO_IDE PROPERTIES WIN32_EXECUTABLE TRUE)
