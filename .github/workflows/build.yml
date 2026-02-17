@@ -1,12 +1,40 @@
-- name: Build Project
+name: AIO_IDE_Final_Extraction
+
+on: [push]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Cache vcpkg
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ env.VCPKG_INSTALLATION_ROOT }}/installed
+          ~/.vcpkg
+        key: vcpkg-cache-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
+
+    - name: Install Dependencies
+      run: |
+        vcpkg install curl:x64-windows nlohmann-json:x64-windows
+
+    - name: Configure CMake
+      run: |
+        cmake -S . -B build `
+        -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" `
+        -DCMAKE_BUILD_TYPE=Release `
+        -A x64
+
+    - name: Build Project
       run: cmake --build build --config Release
 
-    - name: List Files (To see where EXE is)
-      run: dir /s build\*.exe  # هذا السطر سيكشف لنا مكان الملف بالضبط في السجلات
-
+    # هذه الخطوة تبحث عن مكان الملف الفعلي وترفعه لك
     - name: Upload Final EXE
       uses: actions/upload-artifact@v4
       with:
         name: AIO_Smart_IDE_Windows
-        # التعديل السحري: البحث في كل المجلدات عن الملف
         path: "**/AIO_IDE.exe"
+        if-no-files-found: error
