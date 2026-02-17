@@ -1,4 +1,4 @@
-name: AIO_IDE_Final_Extraction_System
+name: AIO_IDE_Windows_Production
 
 on: [push]
 
@@ -9,21 +9,23 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # 1. التخزين المؤقت لتسريع التجميع
-    - name: Cache vcpkg
+    # --- 1. تفعيل التخزين المؤقت للمكتبات (Cache) لمنع التكرار ---
+    - name: Cache vcpkg dependencies
       uses: actions/cache@v4
       with:
         path: |
           ${{ env.VCPKG_INSTALLATION_ROOT }}/installed
           ~/.vcpkg
         key: vcpkg-cache-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
+        restore-keys: |
+          vcpkg-cache-${{ runner.os }}-
 
-    # 2. تثبيت المكتبات (CURL و JSON)
-    - name: Install Dependencies
+    # --- 2. تثبيت المكتبات (سيعمل فقط إذا لم تكن موجودة في الـ Cache) ---
+    - name: Install vcpkg Dependencies
       run: |
         vcpkg install curl:x64-windows nlohmann-json:x64-windows
 
-    # 3. إعداد بناء المشروع (Configuration)
+    # --- 3. إعداد المشروع وربطه بالمكتبات المجمعة ---
     - name: Configure CMake
       run: |
         cmake -S . -B build `
@@ -31,22 +33,13 @@ jobs:
         -DCMAKE_BUILD_TYPE=Release `
         -A x64
 
-    # 4. التجميع الفعلي (Build)
+    # --- 4. بناء ملف الـ EXE النهائي ---
     - name: Build Project
       run: cmake --build build --config Release
 
-    # 5. كشف المسارات (في حال فشل الرفع، سنعرف مكان الملف من هنا)
-    - name: List Build Output
-      run: dir /s build\*.exe
-
-    # 6. الرفع الذكي (Smart Upload)
-    # سيقوم بالبحث عن أي ملف EXE ناتج ورفعه لك
-    - name: Upload Final Binary
+    # --- 5. رفع البرنامج الجاهز للتحميل (Artifact) ---
+    - name: Upload Final EXE
       uses: actions/upload-artifact@v4
       with:
-        name: AIO_Smart_IDE_Package
-        path: |
-          build/Release/*.exe
-          build/*.exe
-          */.exe
-        if-no-files-found: error
+        name: AIO_Smart_IDE_Windows
+        path: build/Release/AIO_IDE.exe
