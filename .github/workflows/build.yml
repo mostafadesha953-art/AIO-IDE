@@ -42,4 +42,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: AIO_IDE_Final
-        path: "*/.exe" # سيجد الملف أينما كان وبأي اسم ناتج
+        path: "**/*.exe" # سيجد الملف أينما كان وبأي اسم ناتج
