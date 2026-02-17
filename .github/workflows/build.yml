@@ -1,4 +1,4 @@
-name: AIO_IDE_Final_Extraction
+name: AIO_IDE_Final_Extraction_System
 
 on: [push]
 
@@ -9,6 +9,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    # 1. التخزين المؤقت لتسريع التجميع
     - name: Cache vcpkg
       uses: actions/cache@v4
       with:
@@ -17,10 +18,12 @@ jobs:
           ~/.vcpkg
         key: vcpkg-cache-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
 
+    # 2. تثبيت المكتبات (CURL و JSON)
     - name: Install Dependencies
       run: |
         vcpkg install curl:x64-windows nlohmann-json:x64-windows
 
+    # 3. إعداد بناء المشروع (Configuration)
     - name: Configure CMake
       run: |
         cmake -S . -B build `
@@ -28,13 +31,22 @@ jobs:
         -DCMAKE_BUILD_TYPE=Release `
         -A x64
 
+    # 4. التجميع الفعلي (Build)
     - name: Build Project
       run: cmake --build build --config Release
 
-    # هذه الخطوة تبحث عن مكان الملف الفعلي وترفعه لك
-    - name: Upload Final EXE
+    # 5. كشف المسارات (في حال فشل الرفع، سنعرف مكان الملف من هنا)
+    - name: List Build Output
+      run: dir /s build\*.exe
+
+    # 6. الرفع الذكي (Smart Upload)
+    # سيقوم بالبحث عن أي ملف EXE ناتج ورفعه لك
+    - name: Upload Final Binary
       uses: actions/upload-artifact@v4
       with:
-        name: AIO_Smart_IDE_Windows
-        path: "**/AIO_IDE.exe"
+        name: AIO_Smart_IDE_Package
+        path: |
+          build/Release/*.exe
+          build/*.exe
+          */.exe
         if-no-files-found: error
