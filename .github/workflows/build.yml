@@ -4,16 +4,28 @@ on: [push]
 
 jobs:
   build-windows:
-    runs-on: windows-latest # التركيز فقط على بيئة ويندوز لضمان النجاح
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v4
 
+    # --- 1. تفعيل التخزين المؤقت للمكتبات (Cache) لمنع التكرار ---
+    - name: Cache vcpkg dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ env.VCPKG_INSTALLATION_ROOT }}/installed
+          ~/.vcpkg
+        key: vcpkg-cache-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
+        restore-keys: |
+          vcpkg-cache-${{ runner.os }}-
+
+    # --- 2. تثبيت المكتبات (سيعمل فقط إذا لم تكن موجودة في الـ Cache) ---
     - name: Install vcpkg Dependencies
-      # تثبيت المكتبات الضرورية فقط لنسخة الويندوز
       run: |
         vcpkg install curl:x64-windows nlohmann-json:x64-windows
 
+    # --- 3. إعداد المشروع وربطه بالمكتبات المجمعة ---
     - name: Configure CMake
       run: |
         cmake -S . -B build `
@@ -21,9 +33,11 @@ jobs:
         -DCMAKE_BUILD_TYPE=Release `
         -A x64
 
+    # --- 4. بناء ملف الـ EXE النهائي ---
     - name: Build Project
       run: cmake --build build --config Release
 
+    # --- 5. رفع البرنامج الجاهز للتحميل (Artifact) ---
     - name: Upload Final EXE
       uses: actions/upload-artifact@v4
       with:
