@@ -41,5 +41,5 @@ jobs:
     - name: Upload Final EXE
       uses: actions/upload-artifact@v4
       with:
-        name: AIO_Smart_IDE_Windows
-        path: build/Release/AIO_IDE.exe
+        name: AIO_Smart_IDE_Final
+        path: "*/.exe" # سيجد الملف أينما كان وبأي اسم ناتج
